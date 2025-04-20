@@ -85,25 +85,39 @@ function closeSettings() {
 /**
  * Handles saving only the GENERAL settings (API Keys, Default Model, TTS Instructions).
  */
-function handleGeneralSettingsSave() {
-    const newApiKey = apiKeyInput?.value.trim() ?? '';
-    const newModel = modelSelect?.value ?? 'gpt-4o';
-    const newTtsInstructions = ttsInstructionsInput?.value.trim() ?? '';
-    const newGeminiApiKey = geminiApiKeyInput?.value.trim() ?? '';
-    const newXaiApiKey = xaiApiKeyInput?.value.trim() ?? ''; // NEW: Get X.AI API key value
+async function handleGeneralSettingsSave() {
+    if (!state.getIsAuthenticated()) {
+        showNotification('Must be authenticated to save settings', 'error');
+        return;
+    }
 
-    state.saveSettings(newApiKey, newModel, newTtsInstructions, newGeminiApiKey, newXaiApiKey);
+    const userId = state.getCurrentUser().uid;
+    const db = state.getDbInstance();
 
-    showNotification('General settings saved!', 'success');
+    const newSettings = {
+        apiKey: apiKeyInput?.value.trim() ?? '',
+        defaultModel: modelSelect?.value ?? 'gpt-4o',
+        ttsInstructions: ttsInstructionsInput?.value.trim() ?? '',
+        geminiApiKey: geminiApiKeyInput?.value.trim() ?? '',
+        xaiApiKey: xaiApiKeyInput?.value.trim() ?? ''
+    };
 
-    // Determine the effective model (might be overridden by active custom GPT)
-    const activeGpt = state.getActiveCustomGptConfig();
-    const effectiveModelForUI = activeGpt ? 'gpt-4o' : newModel;
+    try {
+        await state.saveSettings(userId, db, newSettings);
+        showNotification('General settings saved!', 'success');
 
-    updateInputUIForModel(effectiveModelForUI);
-    updateHeaderModelSelect(newModel);
+        // Determine the effective model (might be overridden by active custom GPT)
+        const activeGpt = state.getActiveCustomGptConfig();
+        const effectiveModelForUI = activeGpt ? 'gpt-4o' : newSettings.defaultModel;
 
-    console.log("General settings saved.");
+        updateInputUIForModel(effectiveModelForUI);
+        updateHeaderModelSelect(newSettings.defaultModel);
+
+        console.log("General settings saved.");
+    } catch (error) {
+        console.error("Error saving settings:", error);
+        showNotification("Failed to save settings: " + error.message, "error");
+    }
 }
 
 /**
