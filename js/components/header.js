@@ -152,11 +152,17 @@ export function initializeHeader() {
     console.log("Header Initialized.");
 }
 
+let isSigningIn = false; // Prevent duplicate sign-in attempts
+
 /**
  * Handle authentication button click
  */
 async function handleAuthClick() {
+    if (isSigningIn) return;
+
     const user = getCurrentUser();
+    isSigningIn = true;
+
     try {
         if (user) {
             await signOutUser();
@@ -165,11 +171,12 @@ async function handleAuthClick() {
         }
     } catch (error) {
         console.error('Authentication error:', error);
-        // Show error notification
         window.showNotification(
             error.message || 'Authentication failed. Please try again.',
             'error'
         );
+    } finally {
+        isSigningIn = false;
     }
 }
 
@@ -185,29 +192,23 @@ export function updateAuthUI(user) {
     const userName = document.getElementById('userName');
 
     if (user) {
-        // Update login button to show logout
         loginBtnText.textContent = 'Logout';
         loginBtn.title = 'Logout';
 
-        // Show user profile
         userProfileDisplay.style.display = 'flex';
         userAvatar.src = user.photoURL || 'assets/default-avatar.png';
         userName.textContent = user.displayName || user.email;
 
-        // Enable header buttons
         if (headerSettingsButton) headerSettingsButton.disabled = false;
         if (headerNewChatButton) headerNewChatButton.disabled = false;
     } else {
-        // Reset to login state
         loginBtnText.textContent = 'Login';
         loginBtn.title = 'Login with Google';
 
-        // Hide user profile
         userProfileDisplay.style.display = 'none';
         userAvatar.src = '';
         userName.textContent = '';
 
-        // Disable header buttons
         if (headerSettingsButton) headerSettingsButton.disabled = true;
         if (headerNewChatButton) headerNewChatButton.disabled = true;
     }
