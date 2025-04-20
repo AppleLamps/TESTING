@@ -872,35 +872,41 @@
     <!-- configManagerUI.js REMOVED -->
     <script type="module" src="js/customGpt/creatorScreen.js"></script> <!-- NEW -->
 
-    <!-- Firebase App (Core) -->
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js"; // Use latest version
-        // Your web app's Firebase configuration
-        // TODO: Replace these placeholder values with your actual Firebase configuration
-        // Get these values from your Firebase Console (https://console.firebase.google.com/)
-        // Project Settings -> General -> Your Apps -> Web App
-        const firebaseConfig = {
-            apiKey: "YOUR_API_KEY",  // ⚠️ Replace with your Firebase API key
-            authDomain: "YOUR_AUTH_DOMAIN",  // ⚠️ Replace with your Firebase auth domain
-            projectId: "YOUR_PROJECT_ID",  // ⚠️ Replace with your Firebase project ID
-            storageBucket: "YOUR_STORAGE_BUCKET",  // ⚠️ Replace with your Firebase storage bucket
-            messagingSenderId: "YOUR_MESSAGING_SENDER_ID",  // ⚠️ Replace with your Firebase messaging sender ID
-            appId: "YOUR_APP_ID"  // ⚠️ Replace with your Firebase app ID
-        };
-        // Initialize Firebase
-        const app = initializeApp(firebaseConfig);
-        // Make the app instance available globally or export it if needed elsewhere
-        window.firebaseApp = app;
-    </script>
-    
-    <!-- Firebase Auth and Firestore -->
-    <script type="module" src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js"></script>
-    <script type="module" src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js"></script>
-    <!-- Optional: Firebase Storage (if storing large knowledge files) -->
-    <!-- <script type="module" src="https://www.gstatic.com/firebasejs/10.12.2/firebase-storage.js"></script> -->
+<!-- Firebase Core + Services -->
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-app.js";
+    import { getAuth, GoogleAuthProvider } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-auth.js";
+    import { getFirestore } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js";
+    // import { getStorage } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-storage.js"; // Optional
 
-    <!-- Main entry point -->
-    <script type="module" src="js/main.js"></script> <!-- Ensure main.js initializes creatorScreen -->
+    // Your actual Firebase config (replace with your own if needed)
+    const firebaseConfig = {
+        apiKey: "AIzaSyAxupRm5XJUUg4Es4ShlAJlR5gLn6JeqUY",
+        authDomain: "yourlocalgpt.firebaseapp.com",
+        projectId: "yourlocalgpt",
+        storageBucket: "yourlocalgpt.appspot.com",
+        messagingSenderId: "1036707206278",
+        appId: "1:1036707206278:web:95c458fe76f721876e6d07",
+        measurementId: "G-RFE0X0CFJB"
+    };
+
+    // Initialize Firebase
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const provider = new GoogleAuthProvider();
+    const db = getFirestore(app);
+    // const storage = getStorage(app); // Uncomment if using Firebase Storage
+
+    // Make services available globally (for use in other modules)
+    window.firebaseApp = app;
+    window.firebaseAuth = auth;
+    window.firebaseProvider = provider;
+    window.firebaseDB = db;
+    // window.firebaseStorage = storage; // Uncomment if using Storage
+</script>
+
+<!-- Your main app logic -->
+<script type="module" src="js/main.js"></script>
 
 </body>
 
