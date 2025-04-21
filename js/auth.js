@@ -1,6 +1,14 @@
 // ===== FILE: auth.js =====
-import { getAuth, onAuthStateChanged, signInWithPopup, GoogleAuthProvider, signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-import { getFirestore } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import {
+    getAuth,
+    onAuthStateChanged,
+    signInWithPopup,
+    signOut
+} from "https://www.gstatic.com/firebasejs/11.6.0/firebase-auth.js";
+
+import {
+    getFirestore
+} from "https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js";
 
 let auth;
 let db;
@@ -19,7 +27,7 @@ export function initializeFirebase() {
  */
 export async function signInWithGoogle() {
     try {
-        const provider = new GoogleAuthProvider();
+        const provider = window.firebaseProvider;
         const result = await signInWithPopup(auth, provider);
         return result.user;
     } catch (error) {
@@ -60,4 +68,4 @@ export function getAuthInstance() {
  */
 export function getDbInstance() {
     return db;
-} 
+}
