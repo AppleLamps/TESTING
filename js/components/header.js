@@ -166,11 +166,14 @@ async function handleAuthClick() {
     try {
         if (user) {
             await signOutUser();
+            updateAuthUI(null); // Update UI after sign out
         } else {
-            await signInWithGoogle();
+            const newUser = await signInWithGoogle();
+            updateAuthUI(newUser); // Update UI after sign in
         }
     } catch (error) {
         console.error('Authentication error:', error);
+        updateAuthUI(null); // Update UI even if sign in fails
         window.showNotification(
             error.message || 'Authentication failed. Please try again.',
             'error'
