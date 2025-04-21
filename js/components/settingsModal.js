@@ -120,20 +120,26 @@ async function handleGeneralSettingsSave() {
     }
 }
 
-/**
- * Updates the settings form with current values from state.
- */
-function updateSettingsForm() {
-    const settings = state.loadSettings();
-    
+async function updateSettingsForm() {
+    const user = firebaseAuth.currentUser;
+    const db = window.firebaseDB;
+
+    if (!user || !db) {
+        console.error("User not logged in or database unavailable.");
+        return;
+    }
+
+    const settings = await state.loadSettings(user, db);
+
     if (apiKeyInput) apiKeyInput.value = settings.apiKey;
     if (modelSelect) modelSelect.value = settings.model;
     if (ttsInstructionsInput) ttsInstructionsInput.value = settings.ttsInstructions;
     if (geminiApiKeyInput) geminiApiKeyInput.value = settings.geminiApiKey;
-    if (xaiApiKeyInput) xaiApiKeyInput.value = settings.xaiApiKey; // NEW: Set X.AI API key value
+    if (xaiApiKeyInput) xaiApiKeyInput.value = settings.xaiApiKey;
 
     console.log("Settings form updated.");
 }
+
 
 /**
  * Updates the settings modal's DEFAULT model dropdown value.

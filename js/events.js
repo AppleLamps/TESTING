@@ -31,11 +31,20 @@ function handleMobileOptionsToggle() {
     }
 }
 
-function handleSettingsOpen() {
-    const currentSettings = state.loadSettings();
+async function handleSettingsOpen() {
+    const user = firebaseAuth.currentUser;
+    const db = window.firebaseDB;
+
+    if (!user || !db) {
+        console.error("User not logged in or database unavailable.");
+        return;
+    }
+
+    const currentSettings = await state.loadSettings(user, db);
     ui.loadSettingsIntoForm(currentSettings);
     ui.toggleSettingsModal(true);
 }
+
 
 function handleSettingsClose() {
     ui.toggleSettingsModal(false);
