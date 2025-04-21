@@ -1,39 +1,35 @@
 // ===== FILE: main.js =====
+import * as auth from './auth.js';
 import * as state from './state.js';
-// Import initializers from each component module
-import { initializeSidebar } from './components/sidebar.js';
-import { initializeChatInput } from './components/chatInput.js';
-import { initializeMessageList, showWelcomeInterface } from './components/messageList.js';
-import { initializeSettingsModal } from './components/settingsModal.js';
-import { initializeWelcomeScreen } from './components/welcomeScreen.js';
-import { initializeHeader } from './components/header.js';
-import { initializeCreatorScreen } from './customGpt/creatorScreen.js';
-import { initializeNotificationSystem } from './notificationHelper.js';
-
-// Import Firebase auth functions
-import { initializeFirebase, setupAuthStateListener } from './auth.js';
+import * as ui from './ui.js';
 import * as chatStore from './stores/chatStore.js';
 import * as gptStore from './customGpt/gptStore.js';
-import * as ui from './components/ui.js';
+import { setupAuthStateListener } from './auth.js';
+import { initializeNotificationSystem } from './helpers/notificationHelper.js';
+import { initializeSidebar } from './components/sidebar.js';
+import { initializeChatInput } from './components/chatInput.js';
+import { initializeSettingsModal } from './components/settingsModal.js';
+import { initializeHeader } from './components/header.js';
+import { initializeCreatorScreen } from './components/creatorScreen.js';
+import { initializeWelcomeScreen } from './components/welcomeScreen.js';
+import { initializeGlobalEvents } from './events.js';
 
 /**
- * Handle authentication state changes
- * @param {Object} user - Firebase user object
+ * Handles what happens when the user's authentication state changes
+ * @param {Object|null} user - Firebase user object
  */
 async function handleAuthStateChange(user) {
+    const db = window.firebaseDB;
+
     if (user) {
-        // User is signed in
         try {
-            // Update state
             state.setCurrentUser(user);
             state.setIsAuthenticated(true);
 
-            // Load user data
-            await state.loadSettings(user.uid);
+            await state.loadSettings(user, db);
             const chats = await chatStore.getChatList(user.uid);
             const gpts = await gptStore.getConfigList(user.uid);
 
-            // Update UI
             ui.renderChatList(chats);
             ui.renderCustomGptList(gpts);
             ui.updateAuthUI(user);
@@ -41,17 +37,13 @@ async function handleAuthStateChange(user) {
             ui.enableChatFeatures();
         } catch (error) {
             console.error("Error handling sign-in:", error);
-            // Show error notification
             window.showNotification("Error loading user data. Please try again.", "error");
         }
     } else {
-        // User is signed out
-        // Update state
         state.setCurrentUser(null);
         state.setIsAuthenticated(false);
         state.clearSensitiveData();
 
-        // Update UI
         ui.clearChatList();
         ui.clearGptList();
         ui.updateAuthUI(null);
@@ -62,36 +54,37 @@ async function handleAuthStateChange(user) {
 }
 
 /**
- * Main application entry point.
- * Initializes state, components, and sets the initial UI view.
+ * Renders the welcome interface
  */
-function initializeApp() {
-    console.log("Initializing App...");
-    
-    // Initialize Firebase first
-    const { auth, db } = initializeFirebase();
-    
-    // Make db instance available to stores
-    chatStore.setDbInstance(db);
-    gptStore.setDbInstance(db);
-    
-    // Initialize notification system first so it's available to other components
-    initializeNotificationSystem();
+function showWelcomeInterface() {
+    const hasVisited = state.getHasVisited();
 
-    // Set up auth state listener
-    setupAuthStateListener(handleAuthStateChange);
-
-    // Initialize Core Components
-    initializeSidebar();
-    initializeChatInput();
-    initializeMessageList();
-    initializeSettingsModal();
-    initializeWelcomeScreen();
-    initializeHeader();
-    initializeCreatorScreen();
-
-    // Initial UI state will be handled by auth state listener
+    if (!hasVisited) {
+        state.setHasVisited(true);
+        ui.showWelcomeScreen();
+    } else {
+        ui.showDefaultScreen();
+    }
 }
 
-// Call init when DOM is loaded
-document.addEventListener('DOMContentLoaded', initializeApp);
+/**
+ * Initializes the app
+ */
+async function initializeApp() {
+    console.log("Initializing App...");
+    initializeNotificationSystem();
+    auth.initializeFirebase();
+
+    initializeSidebar();
+    initializeChatInput();
+    initializeSettingsModal();
+    initializeHeader();
+    initializeCreatorScreen();
+    initializeWelcomeScreen();
+    initializeGlobalEvents();
+
+    setupAuthStateListener(handleAuthStateChange);
+}
+
+// Start the app
+initializeApp();
